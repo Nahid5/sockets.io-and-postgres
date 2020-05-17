@@ -74,7 +74,7 @@ export default {
       store.state.socket.emit("getAllData", this.page);
     },
     prevPage() {
-      this.page.index -= 1;     //Increment page number
+      this.page.index -= 1;     //Decrement page number
       if(this.page.index > this.page.tableSize) {
         this.page.index = this.page.tableSize;
       }
