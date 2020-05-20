@@ -4,7 +4,14 @@
     <input type="number" v-model="page.pageSize" @change=setPageSize() min="0" style="float; right" />
 
     <!-- Load Table -->
-    <vuetable ref="vuetable" :api-mode="false" :fields="fields" :data="data" :css="css.table" />
+    <vuetable ref="vuetable" :api-mode="false" :fields="fields" :data="data" :css="css.table">
+
+      <!-- Notes -->
+      <template slot="notes" scope="props">
+        <textarea type="text" auto-grow v-model="props.rowData.notes" placeholder="Notes..." @change="updateNotes(props.rowData)">
+        </textarea>
+      </template>
+    </vuetable>>
 
     <!-- Custom Pagination -->
     <div class="pull-left">
@@ -50,12 +57,19 @@ export default {
     store.state.socket.emit("getAllData", this.page);
     store.state.socket.emit("getDataSize");
 
-    //Get the latest data
+    //Check if the row updated is in the current view and ask for an updated rows if it is
+    store.state.socket.on("dataIdUpdated", data => {
+      if(this.data.some(item => item.id === data)) {
+        store.state.socket.emit("getAllData", this.page);
+      }
+    })
+
+    //Listen for the latest data
     store.state.socket.on("allData", data => {
       this.data = data;
     })
 
-    //How many rows in the table
+    //Listen for table size
     store.state.socket.on("tableSize", data => {
       this.page.tableSize = data.count;
     })
@@ -97,9 +111,13 @@ export default {
       store.state.socket.emit("getAllData", this.page);
     },
     setPageSize() {
+      if(this.page.index < 0) this.page.index = 0;
       this.page.offset = Number(this.page.index) * Number(this.page.pageSize);
       this.page.limit = Number(this.page.pageSize);
       store.state.socket.emit("getAllData", this.page);
+    },
+    updateNotes(data) {
+      store.state.socket.emit("updateNotes", data);
     }
   }
 }

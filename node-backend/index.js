@@ -41,10 +41,18 @@ io.on('connection', function(socket) {
         console.log('User Disconnected')
     })
 
+    //Update notes and let the clients know which row was updated
+    socket.on("updateNotes", data => {
+        pool.query('UPDATE public."Notes" SET notes = $1 WHERE id = $2;', [data.notes, data.id] ,(err ,res) => {
+            if(err) throw err
+            io.emit('dataIdUpdated', data.id);
+        })
+    })
+
     //Get everything from a table
     socket.on("getAllData", page => {
         //Base query
-        var queryText = "SELECT id, name, notes FROM public.\"Notes\" ";
+        var queryText = 'SELECT id, name, notes FROM public."Notes" ORDER BY id ASC ';
 
         //Position and valus are for parameterization. Help with sql injection.
         //If you want to add filters, you can add them here and follow the pattern
@@ -54,16 +62,12 @@ io.on('connection', function(socket) {
         //Below here you can add custom filtering, such as search by name, id, etc
         
 
-        //The following should be appended last
-        //Order by and asc or desc is needed to the values returned don't shift around randomly.
-        queryText += "ORDER BY $" + position++;
-        values.push("name");
-        queryText += "ASC "
 
         //Offset and fetch next is needed when the database is huge.
-        queryText += "OFFSET $" +position++ + " ROWS FETCH NEXT $" + position++ + " ROWS ONLY";
+        queryText += "OFFSET $" +position++ + " ROWS FETCH NEXT $" + position++ + " ROWS ONLY;";
         values.push(page.offset);
         values.push(page.limit);
+
 
         pool.query(queryText, values, (err ,res) => {
             if(err) throw err
@@ -73,7 +77,7 @@ io.on('connection', function(socket) {
 
     //Get the size of the table
     socket.on("getDataSize", () => {
-        pool.query("SELECT COUNT(*) as count FROM public.\"Notes\";", (err ,res) => {
+        pool.query('SELECT COUNT(*) as count FROM public."Notes";', (err ,res) => {
             if(err) throw err
             socket.emit("tableSize", res.rows[0]);
         })
