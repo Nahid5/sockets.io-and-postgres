@@ -10,6 +10,9 @@ My environment:
 * Ubuntu 20
 
 ---
+
+![Example Gif](h./../img/example.gif)
+
 ### Setup
 Import the database (realtimedb.sql) from node-backend folder. Then copy and rename teh sample.env file to .env and fill in the database info.
 
