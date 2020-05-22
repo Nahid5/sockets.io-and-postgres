@@ -1,5 +1,8 @@
 <template>
   <div class="Main">
+    <!-- Filter by text search -->
+    <input type="text" v-model="filters.filterText" class="form-control" placeholder="Filter...">
+
     <!-- How many to show per page -->
     <input type="number" v-model="page.pageSize" @change=setPageSize() min="0" style="float; right" />
 
@@ -39,6 +42,9 @@ export default {
       data: [],
       fields: FieldDef,
       css: SemanticStyle,
+      filters: {
+        filterText: ""
+      },
       page: {
         limit: 10,
         offset: 0,
@@ -51,16 +57,22 @@ export default {
   watch: {
     data() {
       this.$refs.vuetable.refresh();
+    },
+    filters: {
+      handler: function() {
+        this.setFilters();
+      },
+      deep: true
     }
   },
   mounted() {
-    store.state.socket.emit("getAllData", this.page);
+    store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
     store.state.socket.emit("getDataSize");
 
     //Check if the row updated is in the current view and ask for an updated rows if it is
     store.state.socket.on("dataIdUpdated", data => {
       if(this.data.some(item => item.id === data)) {
-        store.state.socket.emit("getAllData", this.page);
+        store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
       }
     })
 
@@ -85,7 +97,7 @@ export default {
       //So offset is the skip that many rows, and limit is how many to get
       this.page.offset = Number(this.page.index) * Number(this.page.pageSize);
       this.page.limit = Number(this.page.pageSize);
-      store.state.socket.emit("getAllData", this.page);
+      store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
     },
     prevPage() {
       this.page.index -= 1;     //Decrement page number
@@ -97,7 +109,7 @@ export default {
       //So offset is the skip that many rows, and limit is how many to get
       this.page.offset = Number(this.page.index) * Number(this.page.pageSize);
       this.page.limit = Number(this.page.pageSize);
-      store.state.socket.emit("getAllData", this.page);
+      store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
     },
     jumpToPage() {
       if(this.page.index > this.page.tableSize) {
@@ -108,13 +120,18 @@ export default {
       //So offset is the skip that many rows, and limit is how many to get
       this.page.offset = Number(this.page.index) * Number(this.page.pageSize);
       this.page.limit = Number(this.page.pageSize);
-      store.state.socket.emit("getAllData", this.page);
+      store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
     },
     setPageSize() {
       if(this.page.index < 0) this.page.index = 0;
       this.page.offset = Number(this.page.index) * Number(this.page.pageSize);
       this.page.limit = Number(this.page.pageSize);
-      store.state.socket.emit("getAllData", this.page);
+      store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
+    },
+    setFilters() {
+      this.page.index = 0;
+      this.page.offset = 0;
+      store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
     },
     updateNotes(data) {
       store.state.socket.emit("updateNotes", data);
