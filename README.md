@@ -11,7 +11,7 @@ My environment:
 
 ---
 
-![Example Gif](h./../img/example.gif)
+![Example Gif](./example.gif)
 
 ### Setup
 Import the database (realtimedb.sql) from node-backend folder. Then copy and rename teh sample.env file to .env and fill in the database info.
