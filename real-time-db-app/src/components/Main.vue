@@ -83,12 +83,12 @@ export default {
 
     //Listen for table size
     store.state.socket.on("tableSize", data => {
-      this.page.tableSize = data.count;
+      this.page.tableSize = Math.floor(data.count / this.page.limit);
     })
   },
   methods: {
     nextPage() {
-      this.page.index += 1;     //Increment page number
+      this.page.index = parseFloat(this.page.index) + parseFloat(1);     //Increment page number
       if(this.page.index > this.page.tableSize) {
         this.page.index = this.page.tableSize;
       }
@@ -100,7 +100,7 @@ export default {
       store.state.socket.emit("getAllData", {page: this.page, filters: this.filters});
     },
     prevPage() {
-      this.page.index -= 1;     //Decrement page number
+      this.page.index = parseFloat(this.page.index) - parseFloat(1);     //Decrement page number
       if(this.page.index > this.page.tableSize) {
         this.page.index = this.page.tableSize;
       }
