@@ -11,6 +11,8 @@ My environment:
 
 ---
 
+Blog: https://whatsyourssn.com/posts/real-time-app-socket-postgresql/
+
 ![Example Gif](./example.gif)
 
 ### Setup
